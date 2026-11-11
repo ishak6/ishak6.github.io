@@ -73,6 +73,17 @@ A device may poll \`GET /api/device/commands\` and acknowledge an allowed comman
 - Restrict \`ALLOWED_ORIGIN\` to the dashboard origin.
 - The built-in Telegram polling loop uses only the configured admin chat ID.
 
-## Current status
+## Android companion app
 
-The web dashboard and Node API starter are committed. No Android APK or live device agent is included in this initial dashboard release. Real device rows appear only after a companion app is explicitly enrolled and sends heartbeats.
+A native Kotlin + Jetpack Compose MVP is included under `app/`.
+
+- Enrolls only after the device owner enters the enrollment code.
+- Stores the issued device credential using Android Keystore-backed encrypted preferences.
+- Sends a heartbeat only when the user taps the button.
+- Reports only device model, Android version, app version, battery percentage and network type.
+- Includes an in-app disconnect/revoke action.
+- Does not run a background service or access location, camera, microphone, SMS, contacts, calls, files or clipboard.
+
+The **Android Companion APK** GitHub Actions workflow builds a debug APK and uploads it as the artifact `dogerat-companion-debug-apk`. Download it from the successful workflow run's Artifacts section. The APK is not ready until that workflow completes successfully.
+
+Real device rows appear only after the companion app is explicitly enrolled and sends a heartbeat.
