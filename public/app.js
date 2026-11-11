@@ -1,12 +1,13 @@
 const $ = (id) => document.getElementById(id);
 let adminToken = sessionStorage.getItem("dogerat_admin_token") || "";
+let apiBase = (sessionStorage.getItem("dogerat_api_base") || "").replace(/\/+$/, "");
 const headers = () => ({ "content-type": "application/json", authorization: "Bearer " + adminToken });
 function toast(message) {
   const el = $("toast"); el.textContent = message; el.classList.add("show");
   setTimeout(() => el.classList.remove("show"), 2600);
 }
 async function api(path, options = {}) {
-  const response = await fetch(path, { ...options, headers: { ...headers(), ...(options.headers || {}) } });
+  const response = await fetch(apiBase + path, { ...options, headers: { ...headers(), ...(options.headers || {}) } });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || "Request failed (" + response.status + ")");
   return data;
@@ -42,15 +43,18 @@ async function refresh() {
       "<div class='activity-item'><span>" + escapeHtml(event.action) + "</span><time>" + ago(event.at) + "</time></div>"
     ).join("") || "<p class='empty'>No activity yet.</p>";
   } catch (error) {
-    $("api-state").textContent = "Authentication failed";
+    $("api-state").textContent = "Connection failed";
     $("api-state").style.color = "var(--red)";
     toast(error.message);
   }
 }
 $("connect").addEventListener("click", async () => {
   adminToken = $("admin-token").value.trim();
+  apiBase = $("api-base").value.trim().replace(/\/+$/, "");
   if (!adminToken) return toast("Enter your admin token.");
+  if (apiBase && !/^https?:\/\//i.test(apiBase)) return toast("API URL must start with https:// or http://");
   sessionStorage.setItem("dogerat_admin_token", adminToken);
+  sessionStorage.setItem("dogerat_api_base", apiBase);
   await refresh();
 });
 $("refresh").addEventListener("click", refresh);
@@ -59,9 +63,7 @@ $("device-rows").addEventListener("click", async (event) => {
   const revoke = event.target.closest("[data-revoke]");
   try {
     if (command) {
-      await api("/api/devices/" + encodeURIComponent(command.dataset.id) + "/commands", {
-        method: "POST", body: JSON.stringify({ type: command.dataset.command })
-      });
+      await api("/api/devices/" + encodeURIComponent(command.dataset.id) + "/commands", { method: "POST", body: JSON.stringify({ type: command.dataset.command }) });
       toast("Safe command queued.");
     } else if (revoke) {
       if (!confirm("Revoke this device's dashboard access?")) return;
@@ -71,4 +73,8 @@ $("device-rows").addEventListener("click", async (event) => {
     await refresh();
   } catch (error) { toast(error.message); }
 });
-if (adminToken) { $("admin-token").value = adminToken; void refresh(); }
+if (adminToken) {
+  $("admin-token").value = adminToken;
+  $("api-base").value = apiBase;
+  void refresh();
+}

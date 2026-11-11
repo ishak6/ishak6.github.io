@@ -11,19 +11,14 @@
   <div class="shell">
     <aside class="sidebar">
       <div class="brand"><span class="brand-mark">D</span><div><strong>DogeRat</strong><small>DEVICE CONTROL CENTER</small></div></div>
-      <nav>
-        <a class="nav-item active" href="#overview">◫ <span>Overview</span></a>
-        <a class="nav-item" href="#devices">▣ <span>Devices</span></a>
-        <a class="nav-item" href="#activity">◷ <span>Activity log</span></a>
-        <a class="nav-item" href="#settings">⚙ <span>Connection</span></a>
-      </nav>
+      <nav><a class="nav-item active" href="#overview">◫ <span>Overview</span></a><a class="nav-item" href="#devices">▣ <span>Devices</span></a><a class="nav-item" href="#activity">◷ <span>Activity log</span></a><a class="nav-item" href="#settings">⚙ <span>Connection</span></a></nav>
       <div class="sidebar-bottom"><span class="pulse"></span> Dashboard ready <small>Consent-based management</small></div>
     </aside>
     <main>
       <header class="topbar"><div><p class="eyebrow">REMOTE DEVICE OPERATIONS</p><h1>Overview</h1></div><div class="top-actions"><span id="api-state" class="state-pill">Not connected</span><button id="refresh" class="ghost">↻ Refresh</button></div></header>
       <section id="connect-panel" class="connect-panel">
-        <div><h2>Connect your dashboard</h2><p>Enter the admin token configured on your own server. It is kept only in this browser session.</p></div>
-        <div class="connect-row"><input id="admin-token" type="password" placeholder="Admin API token" autocomplete="off"><button id="connect">Connect</button></div>
+        <div><h2>Connect your dashboard</h2><p>Enter your API server URL and admin token. Credentials stay in this browser session.</p></div>
+        <div class="connect-row"><input id="api-base" type="url" placeholder="API URL (blank = same origin)" autocomplete="url"><input id="admin-token" type="password" placeholder="Admin API token" autocomplete="off"><button id="connect">Connect</button></div>
       </section>
       <section id="overview" class="stats">
         <article class="stat-card"><span>Total devices</span><strong id="total-count">—</strong><small>Enrolled devices</small></article>
@@ -31,15 +26,12 @@
         <article class="stat-card"><span>Offline</span><strong id="offline-count">—</strong><small>Awaiting heartbeat</small></article>
         <article class="stat-card"><span>Security</span><strong class="secure">Protected</strong><small>Admin token required</small></article>
       </section>
-      <section id="devices" class="panel">
-        <div class="panel-heading"><div><p class="eyebrow">FLEET MANAGEMENT</p><h2>Registered devices</h2></div><span id="device-total" class="muted">0 devices</span></div>
-        <div class="table-wrap"><table><thead><tr><th>DEVICE</th><th>PLATFORM</th><th>BATTERY</th><th>NETWORK</th><th>LAST SEEN</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody id="device-rows"><tr><td colspan="7" class="empty">Connect to load registered devices.</td></tr></tbody></table></div>
-      </section>
+      <section id="devices" class="panel"><div class="panel-heading"><div><p class="eyebrow">FLEET MANAGEMENT</p><h2>Registered devices</h2></div><span id="device-total" class="muted">0 devices</span></div><div class="table-wrap"><table><thead><tr><th>DEVICE</th><th>PLATFORM</th><th>BATTERY</th><th>NETWORK</th><th>LAST SEEN</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody id="device-rows"><tr><td colspan="7" class="empty">Connect to load registered devices.</td></tr></tbody></table></div></section>
       <section class="lower-grid">
         <section id="activity" class="panel"><div class="panel-heading"><div><p class="eyebrow">AUDIT TRAIL</p><h2>Recent activity</h2></div></div><div id="activity-list" class="activity-list"><p class="empty">No activity loaded.</p></div></section>
         <section id="settings" class="panel"><div class="panel-heading"><div><p class="eyebrow">TELEGRAM INTEGRATION</p><h2>Bot commands</h2></div><span class="telegram-icon">➤</span></div><div class="bot-info"><p>Configure the bot token and admin chat ID on the server.</p><code>/devices</code><code>/status</code><code>/help</code><p class="muted">The bot responds only to the configured admin chat. It reports device status; it does not access private device content.</p></div></section>
       </section>
-      <footer> DOGRAT DEVICE DASHBOARD <span>•</span> Visible, authorized device management</footer>
+      <footer>DOGRAT DEVICE DASHBOARD <span>•</span> Visible, authorized device management</footer>
     </main>
   </div>
   <div id="toast" role="status" aria-live="polite"></div>
