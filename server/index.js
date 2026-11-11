@@ -189,6 +189,13 @@ app.post("/api/devices/:deviceId/revoke", requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+app.post("/api/device/revoke", requireDevice, (req, res) => {
+  req.device.revoked = true;
+  audit("device.self_revoked", req.device.id, { deviceId: req.device.id });
+  void persist();
+  res.json({ ok: true });
+});
+
 app.use(express.static(path.join(ROOT, "public")));
 app.get("*", (_req, res) => res.sendFile(path.join(ROOT, "public", "index.html")));
 
