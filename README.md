@@ -1,75 +1,78 @@
-# Welcome to OnSpace AI
+# DogeRat Device Dashboard
 
-Onspace AI empowers anyone to turn ideas into powerful AI applications in minutes—no coding required. Our free, no-code platform enables effortless creation of custom AI apps; simply describe your vision and our agentic AI handles the rest. The onspace-app, built with React Native and Expo, demonstrates this capability—integrating popular third-party libraries to deliver seamless cross-platform performance across iOS, Android, and Web environments.
+A consent-based device management dashboard with a Telegram status bot. This clean starter replaces the previous repository contents while preserving Git history.
 
-## Getting Started
+## Included
 
-### 1. Install Dependencies
+- Browser dashboard for enrolled device inventory, online/offline status, battery/network summary, and audit events.
+- Admin-token protected API.
+- One-time enrollment-code exchange that issues a unique device credential.
+- Device heartbeat endpoint and device-specific command queue.
+- Strict safe-command allowlist: \`request_status\`, \`network_diagnostics\`, and \`ping\`.
+- Telegram bot commands: \`/help\`, \`/devices\`, and \`/status\`, restricted to one configured admin chat.
+- Device credential revocation and local JSON persistence.
 
-```bash
+## Explicit scope limits
+
+This project does not implement covert monitoring or private-data extraction. It has no camera/microphone capture, SMS or OTP access, contacts harvesting, keylogging, hidden installation, permission bypass, persistence against user choice, or remote uninstall prevention. Devices must be enrolled knowingly and can be revoked by the administrator or removed by their owner.
+
+## Requirements
+
+- Node.js 20+
+- A server you administer
+- Optional Telegram bot created through BotFather
+
+## Run locally
+
+\`\`\`bash
 npm install
-# or
-yarn install
-```
+cp .env.example .env
+\`\`\`
 
-### 2. Start the Project
+Generate two separate secrets (at least 32 random bytes each), then set \`ADMIN_TOKEN\` and \`ENROLLMENT_CODE\` in \`.env\`. Add the Telegram bot token and the single admin chat ID if Telegram notifications are wanted.
 
-- Start the development server (choose your platform):
+\`\`\`bash
+npm start
+\`\`\`
 
-```bash
-npm run start         # Start Expo development server
-npm run android       # Launch Android emulator
-npm run ios           # Launch iOS simulator
-npm run web           # Start the web version
-```
+Open \`http://127.0.0.1:3000\`. Enter the admin token in the dashboard.
 
-- Reset the project (clear cache, etc.):
+## Device enrollment contract
 
-```bash
-npm run reset-project
-```
+A companion app that the device owner explicitly installs and opens can enroll with:
 
-### 3. Lint the Code
+\`\`\`http
+POST /api/devices/enroll
+X-Enrollment-Code: YOUR_ENROLLMENT_CODE
+Content-Type: application/json
 
-```bash
-npm run lint
-```
+{"name":"My Android","platform":"Android","appVersion":"1.0.0"}
+\`\`\`
 
-## Main Dependencies
+The response contains \`deviceId\` and \`deviceToken\`. Store the token securely on that device; it is returned only once.
 
-- React Native: 0.79.4
-- React: 19.0.0
-- Expo: ~53.0.12
-- Expo Router: ~5.1.0
-- Supabase: ^2.50.0
-- Other commonly used libraries:  
-  - @expo/vector-icons  
-  - react-native-paper  
-  - react-native-calendars  
-  - lottie-react-native  
-  - react-native-webview  
-  - and more
+Heartbeat:
 
-For a full list of dependencies, see [package.json](./package.json).
+\`\`\`http
+POST /api/device/heartbeat
+Authorization: Bearer DEVICE_TOKEN
+Content-Type: application/json
 
-## Development Tools
+{"name":"My Android","platform":"Android","appVersion":"1.0.0","batteryPercent":82,"networkType":"Wi-Fi"}
+\`\`\`
 
-- TypeScript: ~5.8.3
-- ESLint: ^9.25.0
-- @babel/core: ^7.25.2
+A device may poll \`GET /api/device/commands\` and acknowledge an allowed command at \`POST /api/device/commands/:commandId/ack\`. Implement only the three documented safe command types in the companion app.
 
-## Contributing
+## Deployment security
 
-1. Fork this repository
-2. Create a new branch (`git checkout -b main`)
-3. Commit your changes (`git commit -am 'Add new feature'`)
-4. Push to the branch (`git push origin feature/your-feature`)
-5. Open a Pull Request
+- Do not expose this service directly to the public internet without HTTPS.
+- Put it behind a TLS reverse proxy (for example, Caddy or Nginx).
+- Bind to localhost by default; set \`HOST=0.0.0.0\` only behind a properly configured firewall and TLS proxy.
+- Keep \`.env\` and \`data/store.json\` private and backed up.
+- Use a unique admin token and enrollment code; rotate them if exposed.
+- Restrict \`ALLOWED_ORIGIN\` to the dashboard origin.
+- The built-in Telegram polling loop uses only the configured admin chat ID.
 
-## License
+## Current status
 
-This project is private ("private": true). For collaboration inquiries, please contact the author.
-
----
-
-Feel free to add project screenshots, API documentation, feature descriptions, or any other information as needed.
+The web dashboard and Node API starter are committed. No Android APK or live device agent is included in this initial dashboard release. Real device rows appear only after a companion app is explicitly enrolled and sends heartbeats.

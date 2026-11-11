@@ -1,3 +1,0 @@
-[submodule "djing_flow"]
-	path = agent/netflow/djing_flow
-	url = git://github.com/nerosketch/djing_flow.git
